@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import fs from "fs";
 import "dotenv/config";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -31,10 +32,43 @@ async function main() {
     prompt: haiku,
     n: 1,
     size: "1024x1024",
+    response_format: "b64_json",
   });
 
-  const imageUrl = response.data[0].url;
-  console.log(imageUrl);
+  const image = response.data[0].b64_json;
+
+  // Decode the base64 image and save it as a file
+  const buffer = Buffer.from(image, "base64");
+  const timestamp = Date.now();
+  fs.writeFile(`${timestamp}.png`, buffer, (err) => {
+    if (err) {
+      console.error("There was an error saving the image:", err);
+    } else {
+      console.log("Image was saved successfully.");
+    }
+  });
+
+  fs.readFile("template.html", "utf8", (err, data) => {
+    if (err) {
+      console.error("There was an error reading the HTML template:", err);
+      return;
+    }
+
+    let updatedHtml = data.replace(
+      "[HAIKU_TEXT]",
+      haiku.split("\n").join("<br>")
+    );
+    updatedHtml = updatedHtml.replace("[IMAGE_URL]", `${timestamp}.png`);
+
+    // Save the updated HTML to a new file
+    fs.writeFile(`generated-${timestamp}.html`, updatedHtml, (err) => {
+      if (err) {
+        console.error("There was an error writing the updated HTML file:", err);
+      } else {
+        console.log("Updated HTML was saved successfully.");
+      }
+    });
+  });
 }
 
 main();
