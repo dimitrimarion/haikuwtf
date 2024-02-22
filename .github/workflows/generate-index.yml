@@ -1,14 +1,17 @@
-name: generate-index
-run-name: ${{ github.actor }} is learning GitHub Actions
+name: Daily Haiku generation
+run-name: Generating Daily Haiku
 on: [push]
 jobs:
-  check-bats-version:
+  generate-index:
     runs-on: ubuntu-latest
     steps:
+      - shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
-      - run: npm install -g bats
-      - run: bats -v
-      - run: ls -l
+      - run: npm install
+      - run: node index.js
+      - run: ls -l img
