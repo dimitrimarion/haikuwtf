@@ -14,4 +14,4 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node index.js
-      - run: ls -l img
+      - run: git status

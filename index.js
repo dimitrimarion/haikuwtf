@@ -25,7 +25,7 @@ async function main() {
   });
 
   const haikuText = JSON.parse(completion.choices[0].message.content).text;
-  console.log(`Haiku: ${haikuText}`);
+  console.log(haikuText);
   const timestamp = Date.now();
 
   let haikusArray;
