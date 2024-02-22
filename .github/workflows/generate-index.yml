@@ -4,6 +4,9 @@ on: [push]
 jobs:
   generate-index:
     runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_MESSAGE: CI Daily Haiku Generation
+      CI_COMMIT_AUTHOR: Continuous Integration
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -14,4 +17,9 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node index.js
-      - run: git status
+      - name: GIT Commit index.html
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
