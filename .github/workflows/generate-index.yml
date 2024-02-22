@@ -5,13 +5,13 @@ jobs:
   generate-index:
     runs-on: ubuntu-latest
     steps:
-      - shell: bash
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
       - run: npm install
-      - run: node index.js
+      - shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node index.js
       - run: ls -l img
