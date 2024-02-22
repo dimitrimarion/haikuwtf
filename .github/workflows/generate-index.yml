@@ -1,6 +1,8 @@
 name: Daily Haiku generation
 run-name: Generating Daily Haiku
-on: [push]
+on:
+  schedule:
+    - cron: "5 * * * *"
 jobs:
   generate-index:
     runs-on: ubuntu-latest
