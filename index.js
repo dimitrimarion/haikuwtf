@@ -25,11 +25,23 @@ async function main() {
   });
   console.log(completion.choices[0].message.content);
 
-  const haiku = JSON.parse(completion.choices[0].message.content).text;
+  const haikuText = JSON.parse(completion.choices[0].message.content).text;
+  const timestamp = Date.now();
+
+  let haikusArray;
+  try {
+    haikusArray = JSON.parse(fs.readFileSync("haikus.json", "utf8"));
+  } catch {
+    haikusArray = [];
+  }
+  const newId =
+    haikusArray.length > 0 ? haikusArray[haikusArray.length - 1].id + 1 : 1;
+  haikusArray.push({ id: newId, createdAt: timestamp, text: haikuText });
+  fs.writeFileSync("haikus.json", JSON.stringify(haikusArray, null, 2));
 
   const response = await openai.images.generate({
     model: "dall-e-3",
-    prompt: haiku,
+    prompt: haikuText,
     n: 1,
     size: "1024x1024",
     response_format: "b64_json",
@@ -39,8 +51,7 @@ async function main() {
 
   // Decode the base64 image and save it as a file
   const buffer = Buffer.from(image, "base64");
-  const timestamp = Date.now();
-  fs.writeFile(`${timestamp}.png`, buffer, (err) => {
+  fs.writeFile(`img/${timestamp}.png`, buffer, (err) => {
     if (err) {
       console.error("There was an error saving the image:", err);
     } else {
@@ -56,12 +67,12 @@ async function main() {
 
     let updatedHtml = data.replace(
       "[HAIKU_TEXT]",
-      haiku.split("\n").join("<br>")
+      haikuText.split("\n").join("<br>")
     );
-    updatedHtml = updatedHtml.replace("[IMAGE_URL]", `${timestamp}.png`);
+    updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
 
     // Save the updated HTML to a new file
-    fs.writeFile(`generated-${timestamp}.html`, updatedHtml, (err) => {
+    fs.writeFile(`index.html`, updatedHtml, (err) => {
       if (err) {
         console.error("There was an error writing the updated HTML file:", err);
       } else {
