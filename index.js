@@ -23,9 +23,9 @@ async function main() {
     response_format: { type: "json_object" },
     temperature: 1.4,
   });
-  console.log(completion.choices[0].message.content);
 
   const haikuText = JSON.parse(completion.choices[0].message.content).text;
+  console.log(`Haiku: ${haikuText}`);
   const timestamp = Date.now();
 
   let haikusArray;
