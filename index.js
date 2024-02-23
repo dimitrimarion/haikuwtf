@@ -5,6 +5,16 @@ import "dotenv/config";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function main() {
+  let haikusArray;
+  try {
+    haikusArray = JSON.parse(fs.readFileSync("haikus.json", "utf8"));
+  } catch {
+    haikusArray = [];
+  }
+
+  // Archive current
+  archive(haikusArray);
+
   const completion = await openai.chat.completions.create({
     messages: [
       {
@@ -27,16 +37,6 @@ async function main() {
   const haikuText = JSON.parse(completion.choices[0].message.content).text;
   console.log(haikuText);
   const timestamp = Date.now();
-
-  let haikusArray;
-  try {
-    haikusArray = JSON.parse(fs.readFileSync("haikus.json", "utf8"));
-  } catch {
-    haikusArray = [];
-  }
-
-  // Archive current
-  archive(haikusArray);
 
   const newId =
     haikusArray.length > 0 ? haikusArray[haikusArray.length - 1].id + 1 : 1;
@@ -76,7 +76,7 @@ async function main() {
 
     updatedHtml = updatedHtml.replace(
       "[PREVIOUS]",
-      `archiveJJ/${haikusArray[i - 1].id}/index.html`
+      `archive/${haikusArray[haikusArray.length - 2].id}/index.html`
     );
 
     updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
@@ -94,7 +94,7 @@ async function main() {
 
 function archive(haikusArray) {
   const haiku = haikusArray[haikusArray.length - 1];
-  const { id, createdAt, haikuText } = haiku;
+  const { id, createdAt, text: haikuText } = haiku;
 
   const folderName = `dist/archive/${id}`;
   try {
@@ -126,15 +126,10 @@ function archive(haikusArray) {
     );
     updatedHtml = updatedHtml.replace("[IMAGE_URL]", `${createdAt}.png`);
 
-    updatedHtml = updatedHtml.replace(
-      "[PREVIOUS]",
-      `../${haikusArray[i - 1].id}/index.html`
-    );
+    updatedHtml = updatedHtml.replace("[PREVIOUS]", `../${id - 1}/index.html`);
 
-    updatedHtml = updatedHtml.replace(
-      "[NEXT]",
-      `../${haikusArray[i + 1].id}/index.html`
-    );
+    updatedHtml = updatedHtml.replace("[NEXT]", `./../../index.html`);
+
     // Save the updated HTML to a new file
     fs.writeFile(`dist/archive/${id}/index.html`, updatedHtml, (err) => {
       if (err) {
