@@ -76,7 +76,7 @@ async function main() {
 
     updatedHtml = updatedHtml.replace(
       "[PREVIOUS]",
-      `archive/${haikusArray[haikusArray.length - 2].id}/index.html`
+      `archive/${newId - 1}/index.html`
     );
 
     updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
