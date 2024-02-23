@@ -34,6 +34,10 @@ async function main() {
   } catch {
     haikusArray = [];
   }
+
+  // Archive current
+  archive(haikusArray);
+
   const newId =
     haikusArray.length > 0 ? haikusArray[haikusArray.length - 1].id + 1 : 1;
   haikusArray.push({ id: newId, createdAt: timestamp, text: haikuText });
@@ -69,10 +73,70 @@ async function main() {
       "[HAIKU_TEXT]",
       haikuText.split("\n").join("<br>")
     );
+
+    updatedHtml = updatedHtml.replace(
+      "[PREVIOUS]",
+      `archiveJJ/${haikusArray[i - 1].id}/index.html`
+    );
+
     updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
 
     // Save the updated HTML to a new file
     fs.writeFile(`dist/index.html`, updatedHtml, (err) => {
+      if (err) {
+        console.error("There was an error writing the updated HTML file:", err);
+      } else {
+        console.log("Updated HTML was saved successfully.");
+      }
+    });
+  });
+}
+
+function archive(haikusArray) {
+  const haiku = haikusArray[haikusArray.length - 1];
+  const { id, createdAt, haikuText } = haiku;
+
+  const folderName = `dist/archive/${id}`;
+  try {
+    if (!fs.existsSync(folderName)) {
+      fs.mkdirSync(folderName);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  const oldPath = `dist/img/${createdAt}.png`;
+  const newPath = `dist/archive/${id}/${createdAt}.png`;
+  try {
+    fs.renameSync(oldPath, newPath);
+
+    console.log("File moved successfully");
+  } catch (error) {
+    console.error(error);
+  }
+
+  fs.readFile("template-archive.html", "utf8", (err, data) => {
+    if (err) {
+      console.error("There was an error reading the HTML template:", err);
+      return;
+    }
+
+    let updatedHtml = data.replace(
+      "[HAIKU_TEXT]",
+      haikuText.split("\n").join("<br>")
+    );
+    updatedHtml = updatedHtml.replace("[IMAGE_URL]", `${createdAt}.png`);
+
+    updatedHtml = updatedHtml.replace(
+      "[PREVIOUS]",
+      `../${haikusArray[i - 1].id}/index.html`
+    );
+
+    updatedHtml = updatedHtml.replace(
+      "[NEXT]",
+      `../${haikusArray[i + 1].id}/index.html`
+    );
+    // Save the updated HTML to a new file
+    fs.writeFile(`dist/archive/${id}/index.html`, updatedHtml, (err) => {
       if (err) {
         console.error("There was an error writing the updated HTML file:", err);
       } else {
