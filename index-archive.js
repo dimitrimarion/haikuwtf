@@ -12,55 +12,53 @@ async function main() {
     haikusArray = [];
   }
 
-  haikusArray.forEach((element) => {
+  haikusArray.forEach((element, i) => {
     const folderName = `dist/archive/${element.id}`;
     if (element.id != 30) {
+      const haikuText = element.text;
+      const timestamp = element.createdAt;
       console.log(folderName);
       if (element.id != 1) {
-        const oldPath = `dist/img/${element.createdAt}.png`;
-        const newPath = `dist/archive/${element.id}/${element.createdAt}.png`;
-        try {
-          // Top level await is available without a flag since Node.js v14.8
-          fs.renameSync(oldPath, newPath);
+        fs.readFile("template-archive.html", "utf8", (err, data) => {
+          if (err) {
+            console.error("There was an error reading the HTML template:", err);
+            return;
+          }
 
-          // Handle success (fs.rename resolves with `undefined` on success)
-          console.log("File moved successfully");
-        } catch (error) {
-          // Handle the error
-          console.error(error);
-        }
-      }
-      try {
-        if (!fs.existsSync(folderName)) {
-          fs.mkdirSync(folderName);
-        }
-      } catch (err) {
-        console.error(err);
+          let updatedHtml = data.replace(
+            "[HAIKU_TEXT]",
+            haikuText.split("\n").join("<br>")
+          );
+          updatedHtml = updatedHtml.replace("[IMAGE_URL]", `${timestamp}.png`);
+
+          updatedHtml = updatedHtml.replace(
+            "[PREVIOUS]",
+            `../${haikusArray[i - 1].id}/index.html`
+          );
+
+          updatedHtml = updatedHtml.replace(
+            "[NEXT]",
+            `../${haikusArray[i + 1].id}/index.html`
+          );
+          // Save the updated HTML to a new file
+          fs.writeFile(
+            `dist/archive/${element.id}/index.html`,
+            updatedHtml,
+            (err) => {
+              if (err) {
+                console.error(
+                  "There was an error writing the updated HTML file:",
+                  err
+                );
+              } else {
+                console.log("Updated HTML was saved successfully.");
+              }
+            }
+          );
+        });
       }
     }
   });
-
-  /*   fs.readFile("template.html", "utf8", (err, data) => {
-    if (err) {
-      console.error("There was an error reading the HTML template:", err);
-      return;
-    }
-
-    let updatedHtml = data.replace(
-      "[HAIKU_TEXT]",
-      haikuText.split("\n").join("<br>")
-    );
-    updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
-
-    // Save the updated HTML to a new file
-    fs.writeFile(`dist/index.html`, updatedHtml, (err) => {
-      if (err) {
-        console.error("There was an error writing the updated HTML file:", err);
-      } else {
-        console.log("Updated HTML was saved successfully.");
-      }
-    });
-  }); */
 }
 
 main();
