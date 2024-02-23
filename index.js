@@ -51,7 +51,7 @@ async function main() {
 
   // Decode the base64 image and save it as a file
   const buffer = Buffer.from(image, "base64");
-  fs.writeFile(`img/${timestamp}.png`, buffer, (err) => {
+  fs.writeFile(`dist/img/${timestamp}.png`, buffer, (err) => {
     if (err) {
       console.error("There was an error saving the image:", err);
     } else {
@@ -72,7 +72,7 @@ async function main() {
     updatedHtml = updatedHtml.replace("[IMAGE_URL]", `img/${timestamp}.png`);
 
     // Save the updated HTML to a new file
-    fs.writeFile(`index.html`, updatedHtml, (err) => {
+    fs.writeFile(`dist/index.html`, updatedHtml, (err) => {
       if (err) {
         console.error("There was an error writing the updated HTML file:", err);
       } else {
